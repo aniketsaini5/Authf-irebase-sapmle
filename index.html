@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Issue Board</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-email {
+            color: #555;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #e0e7ff;
+            color: #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #c7d2fe;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .auth-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .auth-container h2 {
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .auth-switch a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .main-content {
+            display: none;
+        }
+
+        .main-content.active {
+            display: block;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .filter-group select {
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .issues-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .issue-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .issue-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .issue-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+        }
+
+        .priority-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .priority-low {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .priority-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .priority-high {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .issue-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .issue-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 15px;
+        }
+
+        .issue-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .status-select {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 2px solid #fbbf24;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #ef4444;
+        }
+
+        .similar-issues {
+            margin-top: 15px;
+        }
+
+        .similar-issue-item {
+            padding: 10px;
+            background: #f9fafb;
+            border-left: 3px solid #667eea;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            color: #999;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Auth Container -->
+    <div id="authContainer" class="auth-container">
+        <h2 id="authTitle">Sign In</h2>
+        <div id="authError" class="alert alert-error" style="display: none;"></div>
+
+        <div class="form-group">
+            <label for="authEmail">Email</label>
+            <input type="email" id="authEmail" placeholder="Enter your email" required>
+        </div>
+
+        <div class="form-group">
+            <label for="authPassword">Password</label>
+            <input type="password" id="authPassword" placeholder="Enter your password" required>
+        </div>
+
+        <button id="authSubmit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+
+        <div class="auth-switch">
+            <span id="authSwitchText">Don't have an account?</span>
+            <a href="#" id="authSwitchLink">Sign Up</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="main-content container">
+        <div class="header">
+            <h1>🎯 Smart Issue Board</h1>
+            <div class="user-info">
+                <span class="user-email" id="userEmail"></span>
+                <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="filters">
+                <button id="createIssueBtn" class="btn btn-primary">+ Create Issue</button>
+
+                <div class="filter-group">
+                    <label>Status:</label>
+                    <select id="statusFilter">
+                        <option value="">All</option>
+                        <option value="Open">Open</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Done">Done</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Priority:</label>
+                    <select id="priorityFilter">
+                        <option value="">All</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="issuesContainer" class="issues-grid"></div>
+    </div>
+
+    <!-- Create Issue Modal -->
+    <div id="createIssueModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Issue</h2>
+                <button class="close-btn" onclick="closeCreateModal()">&times;</button>
+            </div>
+
+            <div id="similarIssuesAlert" style="display: none;"></div>
+
+            <div class="form-group">
+                <label for="issueTitle">Title *</label>
+                <input type="text" id="issueTitle" placeholder="Enter issue title" required>
+            </div>
+
+            <div class="form-group">
+                <label for="issueDescription">Description *</label>
+                <textarea id="issueDescription" placeholder="Describe the issue..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="issuePriority">Priority *</label>
+                <select id="issuePriority">
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="issueAssignedTo">Assigned To</label>
+                <input type="text" id="issueAssignedTo" placeholder="Enter email or name">
+            </div>
+
+            <button id="submitIssueBtn" class="btn btn-primary" style="width: 100%;">Create Issue</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase Configuration - Replace with your config
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Initialize Firebase (Replace with your credentials)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBdKSL11HsfZErSVrBFo3KZhpQ_uaxCKuM",
+            authDomain: "auth-5be65.firebaseapp.com",
+            projectId: "auth-5be65",
+            storageBucket: "auth-5be65.firebasestorage.app",
+            messagingSenderId: "730535157774",
+            appId: "1:730535157774:web:389fb61793144e1b9f1c5f",
+            measurementId: "G-6L4CQE77VX"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let allIssues = [];
+        let isSignUp = false;
+
+        // DOM Elements
+        const authContainer = document.getElementById('authContainer');
+        const mainContent = document.getElementById('mainContent');
+        const authTitle = document.getElementById('authTitle');
+        const authSubmit = document.getElementById('authSubmit');
+        const authSwitchText = document.getElementById('authSwitchText');
+        const authSwitchLink = document.getElementById('authSwitchLink');
+        const authError = document.getElementById('authError');
+        const userEmail = document.getElementById('userEmail');
+        const issuesContainer = document.getElementById('issuesContainer');
+        const createIssueModal = document.getElementById('createIssueModal');
+        const similarIssuesAlert = document.getElementById('similarIssuesAlert');
+
+        // Auth State Observer
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                userEmail.textContent = user.email;
+                authContainer.style.display = 'none';
+                mainContent.classList.add('active');
+                loadIssues();
+            } else {
+                currentUser = null;
+                authContainer.style.display = 'block';
+                mainContent.classList.remove('active');
+            }
+        });
+
+        // Auth Toggle
+        authSwitchLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            isSignUp = !isSignUp;
+            if (isSignUp) {
+                authTitle.textContent = 'Sign Up';
+                authSubmit.textContent = 'Sign Up';
+                authSwitchText.textContent = 'Already have an account?';
+                authSwitchLink.textContent = 'Sign In';
+            } else {
+                authTitle.textContent = 'Sign In';
+                authSubmit.textContent = 'Sign In';
+                authSwitchText.textContent = "Don't have an account?";
+                authSwitchLink.textContent = 'Sign Up';
+            }
+            authError.style.display = 'none';
+        });
+
+        // Auth Submit
+        authSubmit.addEventListener('click', async () => {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+
+            if (!email || !password) {
+                showAuthError('Please fill in all fields');
+                return;
+            }
+
+            try {
+                if (isSignUp) {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+                authError.style.display = 'none';
+            } catch (error) {
+                showAuthError(error.message);
+            }
+        });
+
+        function showAuthError(message) {
+            authError.textContent = message;
+            authError.style.display = 'block';
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // Load Issues
+        function loadIssues() {
+            const q = query(collection(db, 'issues'), orderBy('createdAt', 'desc'));
+            onSnapshot(q, (snapshot) => {
+                allIssues = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                renderIssues();
+            });
+        }
+
+        // Render Issues
+        function renderIssues() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+
+            let filtered = allIssues;
+            if (statusFilter) filtered = filtered.filter(i => i.status === statusFilter);
+            if (priorityFilter) filtered = filtered.filter(i => i.priority === priorityFilter);
+
+            if (filtered.length === 0) {
+                issuesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No issues found</h3>
+                        <p>Create your first issue to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            issuesContainer.innerHTML = filtered.map(issue => `
+                <div class="issue-card">
+                    <div class="issue-header">
+                        <div class="issue-title">${escapeHtml(issue.title)}</div>
+                        <span class="priority-badge priority-${issue.priority.toLowerCase()}">${issue.priority}</span>
+                    </div>
+                    <div class="issue-description">${escapeHtml(issue.description)}</div>
+                    <div class="issue-meta">
+                        <div><strong>Assigned to:</strong> ${escapeHtml(issue.assignedTo || 'Unassigned')}</div>
+                        <div><strong>Created by:</strong> ${escapeHtml(issue.createdBy)}</div>
+                        <div><strong>Created:</strong> ${formatDate(issue.createdAt)}</div>
+                    </div>
+                    <div class="issue-actions">
+                        <select class="status-select" data-id="${issue.id}" data-current="${issue.status}">
+                            <option value="Open" ${issue.status === 'Open' ? 'selected' : ''}>Open</option>
+                            <option value="In Progress" ${issue.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="Done" ${issue.status === 'Done' ? 'selected' : ''}>Done</option>
+                        </select>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add event listeners to status selects
+            document.querySelectorAll('.status-select').forEach(select => {
+                select.addEventListener('change', handleStatusChange);
+            });
+        }
+
+        // Handle Status Change
+        async function handleStatusChange(e) {
+            const issueId = e.target.dataset.id;
+            const currentStatus = e.target.dataset.current;
+            const newStatus = e.target.value;
+
+            // Rule: Cannot go from Open to Done
+            if (currentStatus === 'Open' && newStatus === 'Done') {
+                alert('⚠️ Cannot move directly from Open to Done. Please set to In Progress first.');
+                e.target.value = currentStatus;
+                return;
+            }
+
+            try {
+                await updateDoc(doc(db, 'issues', issueId), {
+                    status: newStatus
+                });
+            } catch (error) {
+                alert('Error updating status: ' + error.message);
+                e.target.value = currentStatus;
+            }
+        }
+
+        // Create Issue
+        document.getElementById('createIssueBtn').addEventListener('click', () => {
+            createIssueModal.classList.add('active');
+            document.getElementById('issueTitle').value = '';
+            document.getElementById('issueDescription').value = '';
+            document.getElementById('issuePriority').value = 'Medium';
+            document.getElementById('issueAssignedTo').value = '';
+            similarIssuesAlert.style.display = 'none';
+        });
+
+        // Check for similar issues
+        document.getElementById('issueTitle').addEventListener('input', (e) => {
+            const title = e.target.value.toLowerCase();
+            if (title.length < 3) {
+                similarIssuesAlert.style.display = 'none';
+                return;
+            }
+
+            const similar = allIssues.filter(issue =>
+                issue.title.toLowerCase().includes(title) ||
+                title.includes(issue.title.toLowerCase())
+            );
+
+            if (similar.length > 0) {
+                similarIssuesAlert.className = 'alert alert-warning';
+                similarIssuesAlert.innerHTML = `
+                    <strong>⚠️ Similar issues found:</strong>
+                    <div class="similar-issues">
+                        ${similar.map(s => `
+                            <div class="similar-issue-item">
+                                <strong>${escapeHtml(s.title)}</strong><br>
+                                <small>Status: ${s.status} | Priority: ${s.priority}</small>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <p style="margin-top: 10px;">Consider updating an existing issue instead of creating a duplicate.</p>
+                `;
+                similarIssuesAlert.style.display = 'block';
+            } else {
+                similarIssuesAlert.style.display = 'none';
+            }
+        });
+
+        // Submit Issue
+        document.getElementById('submitIssueBtn').addEventListener('click', async () => {
+            const title = document.getElementById('issueTitle').value;
+            const description = document.getElementById('issueDescription').value;
+            const priority = document.getElementById('issuePriority').value;
+            const assignedTo = document.getElementById('issueAssignedTo').value;
+
+            if (!title || !description) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, 'issues'), {
+                    title,
+                    description,
+                    priority,
+                    status: 'Open',
+                    assignedTo: assignedTo || null,
+                    createdBy: currentUser.email,
+                    createdAt: serverTimestamp()
+                });
+                closeCreateModal();
+            } catch (error) {
+                alert('Error creating issue: ' + error.message);
+            }
+        });
+
+        window.closeCreateModal = function () {
+            createIssueModal.classList.remove('active');
+        };
+
+        // Filters
+        document.getElementById('statusFilter').addEventListener('change', renderIssues);
+        document.getElementById('priorityFilter').addEventListener('change', renderIssues);
+
+        // Utility Functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Just now';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleString();
+        }
+
+        // Close modal on outside click
+        createIssueModal.addEventListener('click', (e) => {
+            if (e.target === createIssueModal) {
+                closeCreateModal();
+            }
+        });
+    </script>
+</body>
+
+</html>
